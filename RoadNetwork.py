@@ -1,4 +1,5 @@
 import simpy
+import random, string
 from numpy.random import uniform, exponential
 
 class RoadNetwork(object):
@@ -19,7 +20,8 @@ class RoadNetwork(object):
                 't0': t0,
                 'mu': mu}
             if nodeID is None:
-                nodeID = max(self.nodes.keys()) + 1
+                chars = string.ascii_uppercase + string.digits
+                nodeID = ''.join([random.choice(chars) for i in range(8)])
             if nodeID not in self.nodes.keys():
                 self.addNode(nodeID, cap=1)
             self.links[linkID]['node'] = self.nodes[nodeID]
