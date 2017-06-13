@@ -13,6 +13,12 @@ def main():
     #env = simpy.Environment()
     env = simpy.rt.RealtimeEnvironment(factor=0.2)
 
+    #      2S;\         5S;\
+    # 1W     \;2N   4W    \;5N    7W
+    # <----  x x  <----   x x  <----
+    # ---->  x x  ---->   x x  ---->
+    # 1E    ;\3N    4E    ;\6N    7E
+    #     3S\;          6S\;
     sim = Simulation(env)
     sim.network.addLink(linkID='1E', turns={'3S': 0.25, '4E': 0.5}, nodeID='1a', t0=1, mu=1)
     sim.network.addLink(linkID='1W', turns={}, nodeID='1b', t0=1, mu=0)
@@ -24,12 +30,21 @@ def main():
     sim.network.addLink(linkID='3S', turns={}, nodeID='3b', t0=1, mu=0)
 
     sim.network.addLink(linkID='4W', turns={'1W': 0.5, '2N': 0.25}, nodeID='4a', t0=1, mu=1)
-    sim.network.addLink(linkID='4E', turns={}, nodeID='4b', t0=1, mu=0)
+    sim.network.addLink(linkID='4E', turns={'6S': 0.25, '7E': 0.5}, nodeID='4b', t0=1, mu=1)
+
+    sim.network.addLink(linkID='5S', turns={'6S': 0.5, '6E': 0.25}, nodeID='5a', t0=1, mu=1)
+    sim.network.addLink(linkID='5N', turns={}, nodeID='5b', t0=1, mu=0)
+
+    sim.network.addLink(linkID='6N', turns={'5N': 0.5, '7E':0.25}, nodeID='6a', t0=1, mu=1)
+    sim.network.addLink(linkID='6S', turns={}, nodeID='6b', t0=1, mu=0)
+
+    sim.network.addLink(linkID='7W', turns={'4W': 0.5, '5N': 0.25}, nodeID='7a', t0=1, mu=1)
+    sim.network.addLink(linkID='7E', turns={}, nodeID='7b', t0=1, mu=0)
 
     env.process(sim.source(25, _lambda=1, linkid='1E'))
     env.process(sim.source(25, _lambda=1, linkid='2S'))
-    env.process(sim.source(25, _lambda=1, linkid='3N'))
-    env.process(sim.source(25, _lambda=1, linkid='4W'))
+    env.process(sim.source(25, _lambda=1, linkid='6N'))
+    env.process(sim.source(25, _lambda=1, linkid='7W'))
     env.run()
 
     ######################################
