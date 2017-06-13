@@ -1,0 +1,62 @@
+import numpy as np
+from numpy.random import uniform, exponential, multinomial
+import simpy
+
+from RoadNetwork import *
+
+class Simulation(object):
+    def __init__(self, env):
+        self.env = env
+        self.data = []
+        self.network = RoadNetwork(env)
+        self.carCounter = 0
+
+    def car(self, carID, t_arrival, node, turn_ratio, linkid):
+        """ car generator """
+        t_entry, t_travel = t_arrival
+        yield self.env.timeout(t_travel) # travel to queue
+        with node.request() as req:
+            q_length = len(node.queue) # query queue length
+            print('car %d arrived on link %s at %.2fs (Q=%d) ' % (carID, linkid, sum(t_arrival), q_length))
+            self.data.append((carID, linkid, 'arrival', sum(t_arrival), q_length))
+
+            result = yield req # wait until queue is ready
+            t_service = exponential(self.network.links[linkid]['mu'])
+            #print('service time', t_service)
+            yield self.env.timeout(t_service) # services at junction
+            t_depart = self.env.now
+            t_queue = t_depart - sum(t_arrival)
+            # recursionss
+            prob = list(turn_ratio.values())
+            egress = list(turn_ratio.keys())[np.argmax(multinomial(1, prob))]
+            if egress is not 'exit' and egress in self.network.links.keys():
+                t_travel_new = exponential(self.network.links[egress]['t0'])
+                t_arrival_new = (t_depart, t_travel_new)
+                turn_ratio_new = self.network.links[egress]['turns']
+                n_new = self.network.links[egress]['node']
+                c = self.car(carID, t_arrival_new, n_new, turn_ratio_new, egress)
+                self.env.process(c)
+
+            q_length = len(node.queue)
+            print('car %d departed link %s at %.2fs (Q=%d)' % (carID, linkid, t_depart, q_length))
+            self.data.append((carID, linkid, 'departure',  t_depart, q_length, t_queue))
+
+    def source(self, demand_duration, _lambda, linkid):
+        """ Event generator """
+        if linkid not in self.network.links.keys():
+            print('Link %s not defined, exiting simulation' % linkid)
+            exit()
+        while self.env.now < demand_duration:
+            arrival_rate = exponential(_lambda)
+            #print('arrival rate', arrival_rate)
+            turn_ratio = self.network.links[linkid]['turns']
+            n = self.network.links[linkid]['node']
+            t_entry = self.env.now
+            t_travel = uniform(0, self.network.links[linkid]['t0'])
+            t_arrival = (t_entry, t_travel)
+
+            self.carCounter +=1
+            self.data.append((self.carCounter, linkid, 'entry', t_entry, None, None))
+            c = self.car(self.carCounter, t_arrival, n, turn_ratio, linkid)
+            self.env.process(c)
+            yield self.env.timeout(arrival_rate)
