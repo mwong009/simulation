@@ -14,32 +14,38 @@ class Simulation(object):
     def car(self, carID, t_arrival, node, turn_ratio, linkid):
         """ car generator """
         t_entry, t_travel = t_arrival
-        yield self.env.timeout(t_travel) # travel to queue
+        yield self.env.timeout(t_travel) # en-route
         with node.request() as req:
-            q_length = len(node.queue) # query queue length
+            q_length = len(node.queue)+1 # query queue length
             print('car %d arrived on link %s at %.2fs (Q=%d) ' % (carID, linkid, sum(t_arrival), q_length))
             self.data.append((carID, linkid, 'arrival', sum(t_arrival), q_length))
 
             result = yield req # wait until queue is ready
             t_service = exponential(self.network.links[linkid]['mu'])
-            #print('service time', t_service)
+
+            if node in self.network.trafficLights: # query traffic lights if available
+                tg = self.network.trafficLights[node]
+                with tg.stop.request(priority=0) as stop:
+                    yield stop # yield to traffic light 'stop'
+
             yield self.env.timeout(t_service) # services at junction
-            t_depart = self.env.now
-            t_queue = t_depart - sum(t_arrival)
-            # recursionss
+            t_depart = self.env.now # departure time
+            t_queue = t_depart - sum(t_arrival) # time spent in queue
+
+            # recursions (move 'car' into next link with probability prob)
             prob = list(turn_ratio.values())
             egress = list(turn_ratio.keys())[np.argmax(multinomial(1, prob))]
             if egress is not 'exit' and egress in self.network.links.keys():
-                t_travel_new = exponential(self.network.links[egress]['t0'])
-                t_arrival_new = (t_depart, t_travel_new)
-                turn_ratio_new = self.network.links[egress]['turns']
-                n_new = self.network.links[egress]['node']
-                c = self.car(carID, t_arrival_new, n_new, turn_ratio_new, egress)
+                c = self.car(carID=carID,
+                    t_arrival=(t_depart, exponential(self.network.links[egress]['t0'])),
+                    node=self.network.links[egress]['node'],
+                    turn_ratio=self.network.links[egress]['turns'],
+                    link_id=egress)
                 self.env.process(c)
 
-            q_length = len(node.queue)
-            print('car %d departed link %s at %.2fs (Q=%d)' % (carID, linkid, t_depart, q_length))
-            self.data.append((carID, linkid, 'departure',  t_depart, q_length, t_queue))
+        q_length = len(node.queue)
+        print('car %d departed link %s at %.2fs (Q=%d)' % (carID, linkid, t_depart, q_length))
+        self.data.append((carID, linkid, 'departure',  t_depart, q_length, t_queue))
 
     def source(self, demand_duration, _lambda, linkid):
         """ Event generator """
