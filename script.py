@@ -11,7 +11,7 @@ plt.style.use('ggplot')
 
 def main():
     #env = simpy.Environment()
-    env = simpy.rt.RealtimeEnvironment(factor=0.2)
+    env = simpy.rt.RealtimeEnvironment(factor=0.25)
 
     #      2S;\         5S;\
     # 1W     \;2N   4W    \;5N    7W
@@ -21,30 +21,33 @@ def main():
     #     3S\;          6S\;
     sim = Simulation(env)
     sim.network.addLink(linkID='1E', turns={'3S': 0.25, '4E': 0.5}, nodeID='1a', t0=1, mu=1)
-    sim.network.addLink(linkID='1W', turns={}, nodeID='1b', t0=1, mu=0)
-
+    # sim.network.addLink(linkID='1W', turns={}, nodeID='1b', t0=1, mu=0)
+    #
     sim.network.addLink(linkID='2S', turns={'3S': 0.5, '4E': 0.25}, nodeID='2a', t0=1, mu=1)
-    sim.network.addLink(linkID='2N', turns={}, nodeID='2b', t0=1, mu=0)
+    # sim.network.addLink(linkID='2N', turns={}, nodeID='2b', t0=1, mu=0)
+    #
+    # sim.network.addLink(linkID='3N', turns={'2N': 0.5, '4E':0.25}, nodeID='3a', t0=1, mu=1)
+    # sim.network.addLink(linkID='3S', turns={}, nodeID='3b', t0=1, mu=0)
+    #
+    # sim.network.addLink(linkID='4W', turns={'1W': 0.5, '2N': 0.25}, nodeID='4a', t0=1, mu=1)
+    # sim.network.addLink(linkID='4E', turns={'6S': 0.25, '7E': 0.5}, nodeID='4b', t0=1, mu=1)
+    #
+    # sim.network.addLink(linkID='5S', turns={'6S': 0.5, '6E': 0.25}, nodeID='5a', t0=1, mu=1)
+    # sim.network.addLink(linkID='5N', turns={}, nodeID='5b', t0=1, mu=0)
+    #
+    # sim.network.addLink(linkID='6N', turns={'5N': 0.5, '7E':0.25}, nodeID='6a', t0=1, mu=1)
+    # sim.network.addLink(linkID='6S', turns={}, nodeID='6b', t0=1, mu=0)
+    #
+    # sim.network.addLink(linkID='7W', turns={'4W': 0.5, '5N': 0.25}, nodeID='7a', t0=1, mu=1)
+    # sim.network.addLink(linkID='7E', turns={}, nodeID='7b', t0=1, mu=0)
 
-    sim.network.addLink(linkID='3N', turns={'2N': 0.5, '4E':0.25}, nodeID='3a', t0=1, mu=1)
-    sim.network.addLink(linkID='3S', turns={}, nodeID='3b', t0=1, mu=0)
-
-    sim.network.addLink(linkID='4W', turns={'1W': 0.5, '2N': 0.25}, nodeID='4a', t0=1, mu=1)
-    sim.network.addLink(linkID='4E', turns={'6S': 0.25, '7E': 0.5}, nodeID='4b', t0=1, mu=1)
-
-    sim.network.addLink(linkID='5S', turns={'6S': 0.5, '6E': 0.25}, nodeID='5a', t0=1, mu=1)
-    sim.network.addLink(linkID='5N', turns={}, nodeID='5b', t0=1, mu=0)
-
-    sim.network.addLink(linkID='6N', turns={'5N': 0.5, '7E':0.25}, nodeID='6a', t0=1, mu=1)
-    sim.network.addLink(linkID='6S', turns={}, nodeID='6b', t0=1, mu=0)
-
-    sim.network.addLink(linkID='7W', turns={'4W': 0.5, '5N': 0.25}, nodeID='7a', t0=1, mu=1)
-    sim.network.addLink(linkID='7E', turns={}, nodeID='7b', t0=1, mu=0)
+    #sim.network.addTrafficLight(nodeID='1a', duration=60)
+    #sim.network.addTrafficLight(nodeID='2a', duration=60, sync='1a')
 
     env.process(sim.source(25, _lambda=1, linkid='1E'))
-    env.process(sim.source(25, _lambda=1, linkid='2S'))
-    env.process(sim.source(25, _lambda=1, linkid='6N'))
-    env.process(sim.source(25, _lambda=1, linkid='7W'))
+    # env.process(sim.source(25, _lambda=1, linkid='2S'))
+    # env.process(sim.source(25, _lambda=1, linkid='6N'))
+    # env.process(sim.source(25, _lambda=1, linkid='7W'))
     env.run()
 
     ######################################
