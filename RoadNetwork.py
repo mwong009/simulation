@@ -14,7 +14,7 @@ class RoadNetwork(object):
             print('Error: Link %d has already been defined!' % linkID)
         else:
             if 'exit' not in turns.values():
-                turns['exit'] = 1 - sum(turns.values())
+                turns['exit'] = min(1 - sum(turns.values()), 1)
 
             self.links[linkID] = {'length': length, 'turns': turns, 't0': t0, 'mu': mu}
             if nodeID is None:
@@ -24,6 +24,7 @@ class RoadNetwork(object):
                 self.addNode(nodeID, cap=1)
 
             self.links[linkID]['node'] = self.nodes[nodeID]
+            self.links[linkID]['queue'] = simpy.Container(self.env)
             print('Created link %s at node %s' % (linkID, nodeID))
 
     def addNode(self, nodeID, cap=1):
@@ -33,13 +34,13 @@ class RoadNetwork(object):
             node = simpy.Resource(self.env, capacity=cap)
             self.nodes[nodeID] = node
 
-    def addTrafficLight(self, nodeID, duration=60, sync=None, r=5, g=5, y=1):
+    def addTrafficLight(self, nodeID, duration=60, sync=None, t=[5, 1, 5]):
         if nodeID in self.nodes:
-            t1 = TrafficLight(self.env, duration, r, g, y)
+            t1 = TrafficLight(self.env, duration, t)
             if sync is not None and self.nodes[sync] in self.trafficLights:
                 t2 = self.trafficLights[self.nodes[sync]]
                 t1.setStatus(t2.status)
-                t1.setTimings((t2.t_red, t2.t_green, t2.t_amber))
+                t1.setTimings(list(t2.timings.values()))
             self.trafficLights[self.nodes[nodeID]]= t1
             # to interrupt the traffic light, call tl.process.interrupt()
             print('Created traffic light at node %s' % (nodeID))
@@ -48,11 +49,9 @@ class RoadNetwork(object):
             exit()
 
 class TrafficLight(object):
-    def __init__(self, env, t_max=50, t_red=5, t_green=5, t_amber=1):
+    def __init__(self, env, t_max=50, t=[5, 1, 5]):
         self.env = env
-        self.t_red = t_red
-        self.t_green = t_green
-        self.t_amber = t_amber
+        self.timings = {'t_red': t[0], 't_amber': t[1], 't_green': t[2]}
         self.status = random.choice(['GREEN', 'RED'])
         self.process = env.process(self.cycle(t_max))
         self.stop = simpy.PriorityResource(env, capacity=1)
@@ -60,8 +59,8 @@ class TrafficLight(object):
     def setStatus(self, color):
         self.status = color
 
-    def setTimings(self, timings):
-        self.t_red, self.t_green, self.t_amber = timings
+    def setTimings(self, t=[5, 1, 5]):
+        self.timings = {'t_red': t[0], 't_amber': t[1], 't_green': t[2]}
 
     def cycle(self, t_max):
         while self.env.now < t_max:
@@ -69,7 +68,7 @@ class TrafficLight(object):
                 with self.stop.request(priority=-1): # all cars must yield to 'RED'
                     print('Light is %s at %.2f' %  (self.status, self.env.now))
                     try:
-                        yield self.env.timeout(self.t_red)
+                        yield self.env.timeout(self.timings['t_red'])
                     except simpy.Interrupt:
                         pass
                     self.status = 'AMBER'
@@ -77,15 +76,15 @@ class TrafficLight(object):
             if self.status == 'GREEN':
                 print('Light is %s at %.2f' %  (self.status, self.env.now))
                 try:
-                    yield self.env.timeout(self.t_green)
+                    yield self.env.timeout(self.timings['t_green'])
                 except simpy.Interrupt:
                     pass
                 self.status = 'AMBER'
                 self.prev_status = 'GREEN'
             if self.status == 'AMBER':
-                with self.stop.request(priority=1): # allow cars in intersection to continue
+                with self.stop.request(priority=0): # allow cars in intersection to continue
                     print('Light is %s at %.2f' %  (self.status, self.env.now))
-                    yield self.env.timeout(self.t_amber)
+                    yield self.env.timeout(self.timings['t_amber'])
                     try:
                         self.prev_status
                     except AttributeError:
