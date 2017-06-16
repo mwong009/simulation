@@ -23,7 +23,7 @@ def main():
     sim.network.addLink(linkID='1E', turns={'3S': 0.25, '4E': 0.5}, nodeID='1a', t0=1, mu=1)
     # sim.network.addLink(linkID='1W', turns={}, nodeID='1b', t0=1, mu=0)
     #
-    sim.network.addLink(linkID='2S', turns={'3S': 0.5, '4E': 0.25}, nodeID='2a', t0=1, mu=1)
+    sim.network.addLink(linkID='2S', turns={'3S': 0.5, '4E': 0.25}, nodeID='1a', t0=1, mu=1)
     # sim.network.addLink(linkID='2N', turns={}, nodeID='2b', t0=1, mu=0)
     #
     # sim.network.addLink(linkID='3N', turns={'2N': 0.5, '4E':0.25}, nodeID='3a', t0=1, mu=1)
@@ -41,11 +41,11 @@ def main():
     # sim.network.addLink(linkID='7W', turns={'4W': 0.5, '5N': 0.25}, nodeID='7a', t0=1, mu=1)
     # sim.network.addLink(linkID='7E', turns={}, nodeID='7b', t0=1, mu=0)
 
-    #sim.network.addTrafficLight(nodeID='1a', duration=60)
-    #sim.network.addTrafficLight(nodeID='2a', duration=60, sync='1a')
+    # sim.network.addTrafficLight(nodeID='1a', duration=60)
+    # sim.network.addTrafficLight(nodeID='2a', duration=60, sync='1a')
 
     env.process(sim.source(25, _lambda=1, linkid='1E'))
-    # env.process(sim.source(25, _lambda=1, linkid='2S'))
+    env.process(sim.source(25, _lambda=1, linkid='2S'))
     # env.process(sim.source(25, _lambda=1, linkid='6N'))
     # env.process(sim.source(25, _lambda=1, linkid='7W'))
     env.run()
