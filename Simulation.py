@@ -14,10 +14,12 @@ class Simulation(object):
     def car(self, carID, t_arrival, node, turn_ratio, linkid):
         """ car generator """
         t_entry, t_travel = t_arrival
+        queue = self.network.links[linkid]['queue']
         yield self.env.timeout(t_travel) # en-route
+        yield queue.put(1) # put 1 car in link queue
         with node.request() as req:
-            q_length = len(node.queue)+1 # query queue length
-            print('car %d arrived on link %s at %.2fs (Q=%d) ' % (carID, linkid, sum(t_arrival), q_length))
+            q_length = queue.level # query queue length
+            print('car %d arrived on link %s at %.2fs (Q=%d cars) ' % (carID, linkid, sum(t_arrival), q_length))
             self.data.append((carID, linkid, 'arrival', sum(t_arrival), q_length))
 
             result = yield req # wait until queue is ready
@@ -43,8 +45,9 @@ class Simulation(object):
                     link_id=egress)
                 self.env.process(c)
 
-        q_length = len(node.queue)
-        print('car %d departed link %s at %.2fs (Q=%d)' % (carID, linkid, t_depart, q_length))
+        yield queue.get(1)
+        q_length = queue.level
+        print('car %d departed link %s at %.2fs (Q=%d cars)' % (carID, linkid, t_depart, q_length))
         self.data.append((carID, linkid, 'departure',  t_depart, q_length, t_queue))
 
     def source(self, demand_duration, _lambda, linkid):
