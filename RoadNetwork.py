@@ -9,7 +9,7 @@ class RoadNetwork(object):
         self.nodes = {}
         self.trafficLights = {}
 
-    def addLink(self, linkID=None, turns={}, type='link', length=0, t0=1, mu=1, nodeID=None):
+    def addLink(self, linkID=None, turns={}, type='link', length=0, t0=1, mu=1, nodeID=None, coordinates=((0, 0), (0 ,0))):
         if linkID in self.links:
             print('Error: Link %d has already been defined!' % linkID)
         else:
@@ -25,6 +25,7 @@ class RoadNetwork(object):
 
             self.links[linkID]['node'] = self.nodes[nodeID]
             self.links[linkID]['queue'] = simpy.Container(self.env)
+            self.links[linkID]['coordinates'] = coordinates
             print('Created link %s at node %s' % (linkID, nodeID))
 
     def addNode(self, nodeID, cap=1):

@@ -1,5 +1,6 @@
 import numpy as np
-from numpy.random import uniform, exponential, multinomial
+from numpy.random import multinomial
+from distribution import normal, uniform
 import simpy
 
 from RoadNetwork import *
@@ -42,7 +43,7 @@ class Simulation(object):
                     t_arrival=(t_depart, exponential(self.network.links[egress]['t0'])),
                     node=self.network.links[egress]['node'],
                     turn_ratio=self.network.links[egress]['turns'],
-                    link_id=egress)
+                    linkid=egress)
                 self.env.process(c)
 
         yield queue.get(1)
@@ -50,13 +51,13 @@ class Simulation(object):
         print('car %d departed link %s at %.2fs (Q=%d cars)' % (carID, linkid, t_depart, q_length))
         self.data.append((carID, linkid, 'departure',  t_depart, q_length, t_queue))
 
-    def source(self, demand_duration, _lambda, linkid):
+    def source(self, demand_duration, LAMBDA, linkid):
         """ Event generator """
         if linkid not in self.network.links.keys():
             print('Link %s not defined, exiting simulation' % linkid)
             exit()
         while self.env.now < demand_duration:
-            arrival_rate = exponential(_lambda)
+            arrival_rate = exponential(LAMBDA)
             #print('arrival rate', arrival_rate)
             turn_ratio = self.network.links[linkid]['turns']
             n = self.network.links[linkid]['node']

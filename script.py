@@ -5,13 +5,16 @@ import simpy
 import sys, os
 
 from Simulation import *
+from statistics import *
+from SiouxFalls import *
 
 plt.style.use('ggplot')
 
 
 def main():
-    #env = simpy.Environment()
-    env = simpy.rt.RealtimeEnvironment(factor=0.25)
+    env = simpy.Environment()
+    # env = simpy.rt.RealtimeEnvironment(factor=0.1)
+    sf = SiouxFalls(0.0025)
 
     #      2S;\         5S;\
     # 1W     \;2N   4W    \;5N    7W
@@ -20,10 +23,23 @@ def main():
     # 1E    ;\3N    4E    ;\6N    7E
     #     3S\;          6S\;
     sim = Simulation(env)
-    sim.network.addLink(linkID='1E', turns={'3S': 0.25, '4E': 0.5}, nodeID='1a', t0=1, mu=1)
+    for linkid, t0 in enumerate(sf.t0):
+        length = np.sqrt(np.power(sf.x1[linkid]-sf.x2[linkid], 2) + np.power(sf.y1[linkid]-sf.y2[linkid], 2))
+        mu = sf.mu[linkid]
+        for i, node in enumerate(sf.nodes):
+            if linkid+1 in node:
+                nodeID = i
+        turns = {}
+        for j, turn in enumerate(sf.turns[linkid]):
+            turns[j+1] = turn
+        turns['exit'] = turns.pop(list(turns.keys())[-1])
+        coordinates = ((sf.x1, sf.y1), (sf.x2, sf.y2))
+        sim.network.addLink(linkID=linkid+1, turns=turns, type='link', length=length, t0=t0, mu=mu, nodeID=nodeID, coordinates=coordinates)
+        env.process(sim.source(60, LAMBDA=sf.flambda[linkid], linkid=linkid+1))
+    # sim.network.addLink(linkID='1E', turns={'3S': 0.25, '4E': 0.5}, nodeID='1', t0=1, mu=1)
     # sim.network.addLink(linkID='1W', turns={}, nodeID='1b', t0=1, mu=0)
     #
-    sim.network.addLink(linkID='2S', turns={'3S': 0.5, '4E': 0.25}, nodeID='1a', t0=1, mu=1)
+    # sim.network.addLink(linkID='2S', turns={'3S': 0.5, '4E': 0.25}, nodeID='1', t0=1, mu=1)
     # sim.network.addLink(linkID='2N', turns={}, nodeID='2b', t0=1, mu=0)
     #
     # sim.network.addLink(linkID='3N', turns={'2N': 0.5, '4E':0.25}, nodeID='3a', t0=1, mu=1)
@@ -44,18 +60,19 @@ def main():
     # sim.network.addTrafficLight(nodeID='1a', duration=60)
     # sim.network.addTrafficLight(nodeID='2a', duration=60, sync='1a')
 
-    env.process(sim.source(25, _lambda=1, linkid='1E'))
-    env.process(sim.source(25, _lambda=1, linkid='2S'))
+    # env.process(sim.source(25, LAMBDA=1, linkid='1E'))
+    # env.process(sim.source(25, LAMBDA=1, linkid='2S'))
     # env.process(sim.source(25, _lambda=1, linkid='6N'))
     # env.process(sim.source(25, _lambda=1, linkid='7W'))
     env.run()
-
+    print(sf.flambda)
     ######################################
     # simulation statistics and graphing #
     ######################################
     df = pd.DataFrame(sorted(sim.data, key=lambda x: x[3]), columns=['carID', 'link', 'event', 'time', 'queue', 't_queue'])
     print(df)
 
+    # cars statistics
     totalTravelTime = (df[['carID', 'time']].groupby(['carID']).max()- df[['carID', 'time']].groupby(['carID']).min()) #.columns = ['totalTravelTime']
     totalTravelTime.columns= ['totalTravelTime']
 
@@ -65,15 +82,11 @@ def main():
     meanWaitTime = df.loc[df['event'] == 'departure'][['carID', 't_queue']].groupby(['carID']).mean()
     meanWaitTime.columns = ['meanWaitTime']
 
-    statistics = pd.concat([totalTravelTime, totalSegments, meanWaitTime], axis=1)
-    print(statistics)
-    plt.figure(1)
-    plt.hist(statistics['meanWaitTime'])
-    plt.title('Queue time distribution')
-    plt.ylabel('')
-    plt.xlabel('mean waiting time (s)')
-    # print(totalTravelTime)
-    # print(nLinkSegments)
+    carStatistics = pd.concat([totalTravelTime, totalSegments, meanWaitTime], axis=1)
+
+    # links statistics
+    meanQueueLength(plt, df)
+
     plt.figure(2)
     for link in sim.network.links.keys():
         df2 = df.loc[(df['link'] == link) & (df['event'] != 'entry')]
