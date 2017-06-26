@@ -72,7 +72,7 @@ class TrafficLight(object):
                         yield self.env.timeout(self.timings['t_red'])
                     except simpy.Interrupt:
                         pass
-                    self.status = 'AMBER'
+                    self.status = 'GREEN'
                     self.prev_status = 'RED'
             if self.status == 'GREEN':
                 print('Light is %s at %.2f' %  (self.status, self.env.now))
@@ -90,7 +90,5 @@ class TrafficLight(object):
                         self.prev_status
                     except AttributeError:
                         self.prev_status = random.choice(['GREEN', 'RED'])
-                    if self.prev_status == 'GREEN':
-                        self.status = 'RED'
-                    elif self.prev_status == 'RED':
-                        self.status = 'GREEN'
+                    self.status = 'RED'
+                    self.prev_status = 'AMBER'

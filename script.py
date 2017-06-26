@@ -1,8 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import simpy
-import sys, os
+import simpy, cv2, sys, os
 
 from Simulation import *
 from statistics import *
@@ -12,60 +11,78 @@ plt.style.use('ggplot')
 
 
 def main():
-    env = simpy.Environment()
-    # env = simpy.rt.RealtimeEnvironment(factor=0.1)
+    #################################
+    # initialize discrete event env #
+    #################################
+    env = simpy.Environment()                           # use instant simulation
+    # env = simpy.rt.RealtimeEnvironment(factor=0.1)    # use real time simulation
+
+    # initialize Sioux Falls network
     sf = SiouxFalls(0.0025)
 
-    #      2S;\         5S;\
-    # 1W     \;2N   4W    \;5N    7W
-    # <----  x x  <----   x x  <----
-    # ---->  x x  ---->   x x  ---->
-    # 1E    ;\3N    4E    ;\6N    7E
-    #     3S\;          6S\;
+    # create simulation enviromment
     sim = Simulation(env)
+
+    # create Sioux Fall network by enumerating across all links
     for linkid, t0 in enumerate(sf.t0):
-        length = np.sqrt(np.power(sf.x1[linkid]-sf.x2[linkid], 2) + np.power(sf.y1[linkid]-sf.y2[linkid], 2))
+
+        # calculate length of link with (x1, y1) - (x2, y2)
+        length = np.sqrt(np.power(sf.x1[linkid]-sf.x2[linkid], 2) + np.power(sf.y1[linkid]-sf.y2[linkid], 2))/600.
+        print(length)
         mu = sf.mu[linkid]
+
+        # assign nodeID to each link if check pass in node list
         for i, node in enumerate(sf.nodes):
             if linkid+1 in node:
                 nodeID = i
+
+        # assign turn ratio to each link
         turns = {}
         for j, turn in enumerate(sf.turns[linkid]):
             turns[j+1] = turn
+
+        # assign exit probability from last item in turn list ([-1])
         turns['exit'] = turns.pop(list(turns.keys())[-1])
-        coordinates = ((sf.x1, sf.y1), (sf.x2, sf.y2))
-        sim.network.addLink(linkID=linkid+1, turns=turns, type='link', length=length, t0=t0, mu=mu, nodeID=nodeID, coordinates=coordinates)
-        env.process(sim.source(60, LAMBDA=sf.flambda[linkid], linkid=linkid+1))
-    # sim.network.addLink(linkID='1E', turns={'3S': 0.25, '4E': 0.5}, nodeID='1', t0=1, mu=1)
-    # sim.network.addLink(linkID='1W', turns={}, nodeID='1b', t0=1, mu=0)
-    #
-    # sim.network.addLink(linkID='2S', turns={'3S': 0.5, '4E': 0.25}, nodeID='1', t0=1, mu=1)
-    # sim.network.addLink(linkID='2N', turns={}, nodeID='2b', t0=1, mu=0)
-    #
-    # sim.network.addLink(linkID='3N', turns={'2N': 0.5, '4E':0.25}, nodeID='3a', t0=1, mu=1)
-    # sim.network.addLink(linkID='3S', turns={}, nodeID='3b', t0=1, mu=0)
-    #
-    # sim.network.addLink(linkID='4W', turns={'1W': 0.5, '2N': 0.25}, nodeID='4a', t0=1, mu=1)
-    # sim.network.addLink(linkID='4E', turns={'6S': 0.25, '7E': 0.5}, nodeID='4b', t0=1, mu=1)
-    #
-    # sim.network.addLink(linkID='5S', turns={'6S': 0.5, '6E': 0.25}, nodeID='5a', t0=1, mu=1)
-    # sim.network.addLink(linkID='5N', turns={}, nodeID='5b', t0=1, mu=0)
-    #
-    # sim.network.addLink(linkID='6N', turns={'5N': 0.5, '7E':0.25}, nodeID='6a', t0=1, mu=1)
-    # sim.network.addLink(linkID='6S', turns={}, nodeID='6b', t0=1, mu=0)
-    #
-    # sim.network.addLink(linkID='7W', turns={'4W': 0.5, '5N': 0.25}, nodeID='7a', t0=1, mu=1)
-    # sim.network.addLink(linkID='7E', turns={}, nodeID='7b', t0=1, mu=0)
 
-    # sim.network.addTrafficLight(nodeID='1a', duration=60)
-    # sim.network.addTrafficLight(nodeID='2a', duration=60, sync='1a')
+        # generate coordinates of each link (for visualization)
+        pt1 = (np.float32(sf.x1[linkid]/600.), np.float32(sf.y1[linkid]/600.))
+        pt2 = (np.float32(sf.x2[linkid]/600.), np.float32(sf.y2[linkid]/600.))
+        c = (pt1, pt2)
 
-    # env.process(sim.source(25, LAMBDA=1, linkid='1E'))
-    # env.process(sim.source(25, LAMBDA=1, linkid='2S'))
-    # env.process(sim.source(25, _lambda=1, linkid='6N'))
-    # env.process(sim.source(25, _lambda=1, linkid='7W'))
+        # add link to sim.network
+        sim.network.addLink(
+            linkID=linkid+1,
+            turns=turns,
+            type='link',
+            length=length,
+            t0=t0,
+            mu=mu,
+            nodeID=nodeID,
+            coordinates=c
+        )
+
+        # draw link on map
+        line = (pt1, pt2)
+        sim.networkLines.append(line)
+
+        # initialize car generation
+        env.process(sim.source(10, LAMBDA=sf.flambda[linkid], linkid=linkid+1))
+
+    # draw initial network
+    for i in sim.networkLines:
+        cv2.line(sim.img, i[0], i[1], (255,255,255), 3)
+    for linkid in sim.network.links:
+        loc = (0.25*np.asarray(sim.network.links[linkid]['coordinates'][1]) + 0.75*np.asarray(sim.network.links[linkid]['coordinates'][0]))
+        print(loc)
+        cv2.putText(sim.img, str(linkid), tuple(loc), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255))
+    cv2.imshow('image', sim.img)
+
+    # wait for keypress to start simulation
+    print('press space to start')
+    cv2.waitKey(0)
+    # run simulation
     env.run()
-    print(sf.flambda)
+
     ######################################
     # simulation statistics and graphing #
     ######################################

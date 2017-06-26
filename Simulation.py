@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.random import multinomial
 from distribution import normal, uniform
-import simpy
+import simpy, cv2
 
 from RoadNetwork import *
 
@@ -11,6 +11,34 @@ class Simulation(object):
         self.data = []
         self.network = RoadNetwork(env)
         self.carCounter = 0
+        self.img = np.zeros((900, 800, 3), dtype=np.uint8)
+        self.networkLines = []
+
+    def draw(self, queue, linkid):
+        length = self.network.links[linkid]['length']
+        pt1 = self.network.links[linkid]['coordinates'][0]
+        pt2 = self.network.links[linkid]['coordinates'][1]
+        cv2.line(self.img, pt2, pt1, (255,255,255), 3)
+        # calculate new point
+        dk = np.min((1, queue.level*1./length))
+        x2 = pt2[0] + dk*(pt1[0] - pt2[0])
+        y2 = pt2[1] + dk*(pt1[1] - pt2[1])
+        pt1 = (np.float32(x2), np.float32(y2))
+        print('pt1', pt1)
+        print('pt2', pt2)
+        line = (pt2, pt1)
+        self.network.links[linkid]['queueLines'] = line
+
+        # redraw entire network
+        for i in self.networkLines:
+            cv2.line(self.img, i[0], i[1], (255,255,255), 3)
+        for _linkid in self.network.links:
+            if 'queueLines' in self.network.links[_linkid]:
+                line = self.network.links[_linkid]['queueLines']
+                cv2.line(self.img, line[0], line[1], (255,0,0), 3)
+
+        cv2.imshow('image', self.img)
+        k = cv2.waitKey(1)
 
     def car(self, carID, t_arrival, node, turn_ratio, linkid):
         """ car generator """
@@ -18,6 +46,10 @@ class Simulation(object):
         queue = self.network.links[linkid]['queue']
         yield self.env.timeout(t_travel) # en-route
         yield queue.put(1) # put 1 car in link queue
+
+        # draw queue lines
+        self.draw(queue, linkid)
+
         with node.request() as req:
             q_length = queue.level # query queue length
             print('car %d arrived on link %s at %.2fs (Q=%d cars) ' % (carID, linkid, sum(t_arrival), q_length))
