@@ -15,7 +15,7 @@ def main():
     # initialize discrete event env #
     #################################
     env = simpy.Environment()                           # use instant simulation
-    # env = simpy.rt.RealtimeEnvironment(factor=0.1)    # use real time simulation
+    # env = simpy.rt.RealtimeEnvironment(factor=1.)    # use real time simulation
 
     # initialize Sioux Falls network
     sf = SiouxFalls(0.0025)
@@ -78,11 +78,13 @@ def main():
     cv2.imshow(name, sim.img)
 
     # start visualization update process
-    env.process(sim.visualization(frequency=1, name=name))
+    env.process(sim.visualization(frequency=0.5, name=name))
 
     # wait for keypress to start simulation
     print('press space to start')
-    cv2.waitKey(0)
+    k = cv2.waitKey(0)
+    if k == 27:
+        sys.exit()
     # run simulation
     env.run()
 
