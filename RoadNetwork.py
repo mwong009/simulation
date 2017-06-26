@@ -9,14 +9,14 @@ class RoadNetwork(object):
         self.nodes = {}
         self.trafficLights = {}
 
-    def addLink(self, linkID=None, turns={}, type='link', length=0, t0=1, mu=1, nodeID=None, coordinates=((0, 0), (0 ,0))):
+    def addLink(self, linkID=None, turns={}, type='link', length=0, t0=1, MU=1, nodeID=None, coordinates=((0, 0), (0 ,0))):
         if linkID in self.links:
             print('Error: Link %d has already been defined!' % linkID)
         else:
             if 'exit' not in turns.values():
                 turns['exit'] = min(1 - sum(turns.values()), 1)
 
-            self.links[linkID] = {'length': length, 'turns': turns, 't0': t0, 'mu': mu}
+            self.links[linkID] = {'length': length, 'turns': turns, 't0': t0, 'MU': MU}
             if nodeID is None:
                 chars = string.ascii_uppercase + string.digits
                 nodeID = ''.join([random.choice(chars) for i in range(8)])

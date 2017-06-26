@@ -49,6 +49,9 @@ def main():
         pt2 = (np.float32(sf.x2[linkid]/600.), np.float32(sf.y2[linkid]/600.))
         c = (pt1, pt2)
 
+        # draw link on map
+        sim.networkLines.append(c)
+
         # add link to sim.network
         sim.network.addLink(
             linkID=linkid+1,
@@ -56,14 +59,11 @@ def main():
             type='link',
             length=length,
             t0=t0,
-            mu=mu,
+            MU=mu,
             nodeID=nodeID,
             coordinates=c
         )
 
-        # draw link on map
-        line = (pt1, pt2)
-        sim.networkLines.append(line)
 
         # initialize car generation
         env.process(sim.source(10, LAMBDA=sf.flambda[linkid], linkid=linkid+1))
@@ -73,9 +73,12 @@ def main():
         cv2.line(sim.img, i[0], i[1], (255,255,255), 3)
     for linkid in sim.network.links:
         loc = (0.25*np.asarray(sim.network.links[linkid]['coordinates'][1]) + 0.75*np.asarray(sim.network.links[linkid]['coordinates'][0]))
-        print(loc)
         cv2.putText(sim.img, str(linkid), tuple(loc), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255))
-    cv2.imshow('image', sim.img)
+    name = 'Sioux Falls Network'
+    cv2.imshow(name, sim.img)
+
+    # start visualization update process
+    env.process(sim.visualization(frequency=1, name=name))
 
     # wait for keypress to start simulation
     print('press space to start')
@@ -115,6 +118,9 @@ def main():
     plt.xlabel('time (s)')
     plt.legend()
     plt.show()
+
+    print('Press any key to exit')
+    cv2.waitKey(0)
 
 
 # Standard boilerplate to call the main() function to begin
