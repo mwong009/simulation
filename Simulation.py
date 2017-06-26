@@ -25,7 +25,11 @@ class Simulation(object):
             for _linkid in self.network.links:
                 if 'queueLines' in self.network.links[_linkid]:
                     line = self.network.links[_linkid]['queueLines']
-                    cv2.line(self.img, line[0], line[1], (255,0,0), 3)
+                    cap = self.network.links[_linkid]['capacity']
+                    # overlay = self.img.copy()
+                    cv2.line(self.img, line[0], line[1], (0,int(255*(1-cap)),int(255*cap)), 3)
+                    # opacity = 0.8
+                    # cv2.addWeighted(overlay, opacity, self.img, 1-opacity, 0, self.img)
 
             cv2.imshow(name, self.img)
             k = cv2.waitKey(1)
@@ -46,6 +50,7 @@ class Simulation(object):
 
         # add to data dictionary
         self.network.links[linkid]['queueLines'] = line
+        self.network.links[linkid]['capacity'] = dk
 
     def car(self, carID, t_arrival, node, turn_ratio, linkid):
         """ car generator """
