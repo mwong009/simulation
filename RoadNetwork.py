@@ -1,4 +1,5 @@
 import simpy
+import numpy as np
 import random, string
 from numpy.random import uniform, exponential
 
@@ -14,7 +15,7 @@ class RoadNetwork(object):
             print('Error: Link %d has already been defined!' % linkID)
         else:
             if 'exit' not in turns.values():
-                turns['exit'] = min(1 - sum(turns.values()), 1)
+                turns['exit'] = np.min((1 - sum(turns.values()), 1))
 
             self.links[linkID] = {'length': length, 'turns': turns, 't0': t0, 'MU': MU}
             if nodeID is None:
