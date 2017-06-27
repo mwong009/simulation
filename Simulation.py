@@ -6,14 +6,14 @@ import simpy, cv2
 from RoadNetwork import *
 
 class Simulation(object):
-    def __init__(self, env):
+    def __init__(self, env, img):
         self.env = env
         self.data = []
         self.network = RoadNetwork(env)
         self.carCounter = 0
         self.carsInSystem = 0
         self.t_max = 0
-        self.img = np.zeros((900, 800, 3), dtype=np.uint8)
+        self.img = img
         self.networkLines = []
 
     def visualization(self, frequency, name):
@@ -27,7 +27,7 @@ class Simulation(object):
                     line = self.network.links[_linkid]['queueLines']
                     cap = self.network.links[_linkid]['capacity']
                     # overlay = self.img.copy()
-                    cv2.line(self.img, line[0], line[1], (0,int(255*(1-cap)),int(255*cap)), 3)
+                    cv2.line(self.img, line[0], line[1], (0,0, 255), 3)
                     # opacity = 0.8
                     # cv2.addWeighted(overlay, opacity, self.img, 1-opacity, 0, self.img)
 
@@ -114,6 +114,9 @@ class Simulation(object):
 
         # release 1 car from queue
         yield queue.get(1)
+
+        # update queue length for visualization
+        self.updateQueue(queue, linkid)
 
         # update queue level
         q_length = queue.level
