@@ -9,7 +9,6 @@ from SiouxFalls import *
 
 plt.style.use('ggplot')
 
-
 def main():
     #################################
     # initialize discrete event env #
@@ -21,7 +20,8 @@ def main():
     sf = SiouxFalls(0.0025)
 
     # create simulation enviromment
-    sim = Simulation(env)
+    img = np.zeros((900, 800, 3), dtype=np.uint8)
+    sim = Simulation(env, img)
 
     # create Sioux Fall network by enumerating across all links
     for linkid, t0 in enumerate(sf.t0):
