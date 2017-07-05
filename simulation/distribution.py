@@ -31,7 +31,7 @@ def poisson(LAMBDA=1):
 
 def exponential(LAMBDA=1):
     U = uniform()
-    X = -(1/LAMBDA) * np.log(U)
+    X = -(LAMBDA) * np.log(U)
     return X
 
 def normal(mean=0, var=1, d_type='Box-Muller'):
@@ -61,4 +61,4 @@ def normal(mean=0, var=1, d_type='Box-Muller'):
 
 def lognormal(mean=0, var=1, LAMBDA=1):
     N = normal()
-    X = -(1/LAMBDA) * np.log(N)
+    X = -(LAMBDA) * np.log(N)
