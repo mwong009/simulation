@@ -1,7 +1,8 @@
+import random
+import string
 import simpy
 import numpy as np
-import random, string
-from numpy.random import uniform, exponential
+
 
 class RoadNetwork(object):
     def __init__(self, env):

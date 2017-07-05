@@ -1,9 +1,11 @@
+import simpy
+import cv2
 import numpy as np
 from numpy.random import multinomial
-from distribution import normal, uniform
-import simpy, cv2
 
-from RoadNetwork import *
+from simulation.distribution import uniform
+from simulation.roadnetwork import RoadNetwork
+
 
 class Simulation(object):
     def __init__(self, env, img):
