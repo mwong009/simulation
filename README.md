@@ -4,14 +4,22 @@ simulation course (summer '17)
 
 Requriements
 ------------
-Python (3.5+) 
+Python (3.5+)
 
 NumPy (1.13) https://scipy.org/install.html
 
 Matplotlib (2.02) https://matplotlib.org/
 
 SimPy (3.0.10) https://simpy.readthedocs.io/
+
 UPDATE 13/07/2017: Simpy and cv2 now included in this directory
+
+Windows users
+-------------
+For easy installation, use Anaconda (4.4.0) https://www.continuum.io/downloads
+
+It has all the libraries need to run this code prepackaged and ready to go.
+
 
 Usage and Documentation
 -----------------------
@@ -23,20 +31,20 @@ From this directory, start python:
 
 Sample output:
 
-    car 1 arrived on link 1E at 0.03s (Q=0) 
-    car 2 arrived on link 2S at 0.63s (Q=0) 
-    car 3 arrived on link 6N at 0.73s (Q=0) 
+    car 1 arrived on link 1E at 0.03s (Q=0)
+    car 2 arrived on link 2S at 0.63s (Q=0)
+    car 3 arrived on link 6N at 0.73s (Q=0)
     ...
     car 1 departed link 4E at 1.29s (Q=0)
-    car 6 arrived on link 6N at 1.71s (Q=0) 
+    car 6 arrived on link 6N at 1.71s (Q=0)
     car 6 departed link 6N at 1.83s (Q=0)
     ...
-    car 96 arrived on link 7E at 37.20s (Q=0) 
+    car 96 arrived on link 7E at 37.20s (Q=0)
     car 96 departed link 7E at 37.20s (Q=0)
     car 99 departed link 6N at 38.10s (Q=0)
-    car 99 arrived on link 7E at 39.06s (Q=0) 
+    car 99 arrived on link 7E at 39.06s (Q=0)
     car 99 departed link 7E at 39.06s (Q=0)
-    
+
 Statistics can be generated
 
     [514 rows x 6 columns]
