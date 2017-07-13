@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from numpy.random import multinomial
 
-from simulation.distribution import uniform
+from simulation.distribution import uniform, exponential
 from simulation.roadnetwork import RoadNetwork
 
 
@@ -37,7 +37,7 @@ class Simulation(object):
             k = cv2.waitKey(1)
             yield self.env.timeout(frequency)
 
-    def updateQueue(self, queue, linkid, carLength=1.):
+    def updateQueue(self, queue, linkid, carLength=3.):
         # draw queue lines
         length = self.network.links[linkid]['length']
         pt1 = self.network.links[linkid]['coordinates'][0]

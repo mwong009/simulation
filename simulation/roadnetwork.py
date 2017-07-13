@@ -15,7 +15,7 @@ class RoadNetwork(object):
         if linkID in self.links:
             print('Error: Link %d has already been defined!' % linkID)
         else:
-            if 'exit' not in turns.values():
+            if 'exit' not in turns.keys():
                 turns['exit'] = np.min((1 - sum(turns.values()), 1))
 
             self.links[linkID] = {'length': length, 'turns': turns, 't0': t0, 'MU': MU}

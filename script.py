@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import simulation
 
+import simulation.statistics as stats
 from simulation.roadnetwork import RoadNetwork
 from simulation.simulation import Simulation
 from simulation.siouxfalls import SiouxFalls
@@ -34,8 +35,7 @@ def main():
         length = np.sqrt(np.power(siouxfalls.x1[linkid]
                                   - siouxfalls.x2[linkid], 2)
                          + np.power(siouxfalls.y1[linkid]
-                                    - siouxfalls.y2[linkid], 2))
-                 / 600.
+                                    - siouxfalls.y2[linkid], 2)) / 600.
         mu = siouxfalls.mu[linkid]
 
         # assign nodeID to each link if check pass in node list
@@ -88,7 +88,7 @@ def main():
     cv2.imshow(name, sim.img)
 
     # start visualization update process
-    env.process(sim.visualization(frequency=0.5, name=name))
+    env.process(sim.visualization(frequency=0.2, name=name))
 
     # wait for keypress to start simulation
     print('press space to start')
@@ -124,7 +124,7 @@ def main():
                               axis=1)
 
     # links statistics
-    statistics.meanQueueLength(plt, df)
+    stats.meanQueueLength(plt, df)
 
     plt.figure(2)
 
