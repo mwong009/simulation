@@ -1,6 +1,7 @@
 import sys
 import simpy
 import cv2
+import timeit
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -13,7 +14,6 @@ from simulation.siouxfalls import SiouxFalls
 
 plt.style.use('ggplot')
 
-
 class Bootstrap(object):
     def __init__(self, env):
         self.env = env
@@ -25,8 +25,6 @@ class Bootstrap(object):
     def processSimulation(self):
         # initialize Sioux Falls network
         siouxfalls = SiouxFalls(0.0025)
-
-
 
         # create Sioux Fall network by enumerating across all links
         for linkid, t0 in enumerate(siouxfalls.t0):
@@ -81,7 +79,7 @@ def main():
     ########################
     # bootstrap parameters #
     ########################
-    boot = 100
+    boot = 5
 
     #################################
     # initialize discrete event env #
@@ -89,18 +87,22 @@ def main():
     env = simpy.Environment()  # use instant simulation
     # env = simpy.rt.RealtimeEnvironment(factor=1.)  # use real time simulation
 
+    # setup simulation processes
     bsProcess = []
-    bsData = []
-
-    # run simulation b times
     for b in range(boot):
         bs = Bootstrap(env)
         env.process(bs.processSimulation())
         bsProcess.append(bs)
 
+    start_time = timeit.default_timer() # start simulation timer
+
     env.run()
 
-    for bootstrap in bsProcess:
+    end_time = timeit.default_timer() # end simulation timer
+
+    # compile simulation statistics
+    bsTable = None
+    for n, bootstrap in enumerate(bsProcess):
         df = pd.DataFrame(sorted(bootstrap.sim.data, key=lambda x: x[3]),
                           columns=['carID', 'link', 'event',
                                    'time', 'queue', 't_queue'])
@@ -117,57 +119,22 @@ def main():
             ['link', 'queue']].groupby(['link']).max()
         maxQlength.columns=['max']
 
-        bsData.append(meanQlength.values.flatten())
+        if bsTable is None:
+            bsTable = maxQlength
+            bsTable.columns = [1]
 
-    bsData = np.asarray(bsData)
+        else:
+            bsTable[n+1] = maxQlength
 
-    print(np.mean(bsData, axis=0))
-    print(np.var(bsData, axis=0))
+    mean = bsTable.mean(axis=1)
+    mse = bsTable.var(axis=1, ddof=0)
+    bsTable['mean'] = mean
+    bsTable['MSE'] = mse
 
-    ######################################
-    # simulation statistics and graphing #
-    ######################################
-    # df = pd.DataFrame(sorted(sim.data, key=lambda x: x[3]),
-    #                   columns=['carID', 'link', 'event', 'time', 'queue',
-    #                            't_queue'])
-    # print(df)
-    #
-    # # cars statistics
-    # totalTravelTime = (df[['carID', 'time']].groupby(['carID']).max()
-    #                    - df[['carID', 'time']].groupby(['carID']).min())
-    # totalTravelTime.columns = ['totalTravelTime']
-    #
-    # totalSegments = df.loc[df['event'] == 'arrival'][['carID', 'link']]
-    # totalSegments = totalSegments.groupby(['carID']).count()
-    # totalSegments.columns = ['totalSegments']
-    #
-    # meanWaitTime = df.loc[df['event'] == 'departure'][['carID', 't_queue']]
-    # meanWaitTime = meanWaitTime.groupby(['carID']).mean()
-    # meanWaitTime.columns = ['meanWaitTime']
-    #
-    # carStatistics = pd.concat([totalTravelTime, totalSegments, meanWaitTime],
-    #                           axis=1)
-    #
-    # # links statistics
-    # stats.meanQueueLength(plt, df)
-    #
-    # plt.figure(2)
-    #
-    # for link in sim.network.links.keys():
-    #     df2 = df.loc[(df['link'] == link) & (df['event'] != 'entry')]
-    #
-    #     if df2.empty is False and df2['t_queue'].sum() > 0.:
-    #         plt.plot(df2[['time']], df2[['queue']], label='link %s' % link)
-    #
-    # plt.title('Queueing Simulation')
-    # plt.ylabel('queue length')
-    # plt.xlabel('time (s)')
-    # plt.legend()
-    # plt.show()
-    #
-    # print('Press any key to exit')
-    # cv2.waitKey(0)
+    print('Simulation runtime: %.3fs' % (end_time-start_time))
 
+    with pd.option_context('expand_frame_repr', False):
+        print(bsTable)
 
 # Standard boilerplate to call the main() function to begin
 # the program.
