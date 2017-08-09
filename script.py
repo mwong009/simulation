@@ -31,11 +31,10 @@ def main():
     # create Sioux Fall network by enumerating across all links
     for linkid, t0 in enumerate(siouxfalls.t0):
 
-        # calculate length of link with (x1, y1) - (x2, y2)
-        length = np.sqrt(np.power(siouxfalls.x1[linkid]
-                                  - siouxfalls.x2[linkid], 2)
-                         + np.power(siouxfalls.y1[linkid]
-                                    - siouxfalls.y2[linkid], 2)) / 600.
+        # calculate length of link with sqrt((x1 - x2)^2 + (y1 - y2)^2)
+        length = np.sqrt(
+            np.power(siouxfalls.x1[linkid] - siouxfalls.x2[linkid], 2)
+          + np.power(siouxfalls.y1[linkid] - siouxfalls.y2[linkid], 2)) / 600.
         mu = siouxfalls.mu[linkid]
 
         # assign nodeID to each link if check pass in node list
