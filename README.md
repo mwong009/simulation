@@ -5,9 +5,13 @@ simulation course (summer '17)
 Requriements
 ------------
 Python (3.5+) https://www.python.org/downloads/
+
 NumPy (1.13) https://scipy.org/install.html
+
 Matplotlib (2.02) https://matplotlib.org/
+
 SimPy (3.0.10) https://simpy.readthedocs.io/
+
 opencv (3.0+) http://www.opencv.org/
 
     > sudo apt-get install python3 python3-dev python3-tkinter pip3
