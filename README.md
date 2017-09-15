@@ -12,13 +12,13 @@ Matplotlib (2.02) https://matplotlib.org/
 
 SimPy (3.0.10) https://simpy.readthedocs.io/
 
-UPDATE 13/07/2017: Simpy and cv2 now included in this directory
+opencv (3.0+) http://www.opencv.org/
 
 Windows users
 -------------
 For easy installation, use Anaconda (4.4.0) https://www.continuum.io/downloads
 
-It has all the libraries need to run this code prepackaged and ready to go.
+It has all the libraries need to run this code prepackaged.
 
 
 Usage and Documentation
