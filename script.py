@@ -69,8 +69,10 @@ def main():
                             coordinates=c)
 
         # initialize car generation
-        env.process(sim.source(10, LAMBDA=siouxfalls.flambda[linkid],
-                               linkid=linkid+1))
+        if linkid % 3 == 0:
+            env.process(sim.source(10,
+                                   LAMBDA=siouxfalls.flambda[linkid],
+                                   linkid=linkid+1))
 
     # draw initial network
     for i in sim.networkLines:
@@ -87,6 +89,7 @@ def main():
     cv2.imshow(name, sim.img)
 
     # start visualization update process
+    # frequency is the visualization poll rate, smaller = faster polling
     env.process(sim.visualization(frequency=0.2, name=name))
 
     # wait for keypress to start simulation

@@ -17,6 +17,7 @@ class Simulation(object):
         self.t_max = 0
         self.img = img
         self.networkLines = []
+        self.cars = {}
 
     def visualization(self, frequency, name):
         """ visualization env process """
@@ -108,6 +109,8 @@ class Simulation(object):
                     turn_ratio=self.network.links[egress]['turns'],
                     linkid=egress
                 )
+                self.cars[carID].append(egress) # keep track of history
+
                 self.env.process(c)
 
             # keep track of the number of cars in the system
@@ -126,6 +129,9 @@ class Simulation(object):
         # data logging
         print('car %d departed link %s at %.2fs (Q=%d cars)' % (carID, linkid, t_depart, q_length))
         self.data.append((carID, linkid, 'departure',  t_depart, q_length, t_queue))
+
+        # prints car travel history
+        print('car %d history: %s' % (carID, self.cars[carID]))
 
     def source(self, demand_duration, LAMBDA, linkid):
         """ Event generator """
@@ -152,5 +158,8 @@ class Simulation(object):
                 turn_ratio=turn_ratio,
                 linkid=linkid
             )
+            self.cars[self.carCounter] = []
+            self.cars[self.carCounter].append(linkid)
+
             self.env.process(c)
             yield self.env.timeout(arrival_rate)
