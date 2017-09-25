@@ -4,7 +4,7 @@ simulation course (summer '17)
 
 Requriements
 ------------
-Python (3.5+)
+Python (3.5+) https://www.python.org/downloads/
 
 NumPy (1.13) https://scipy.org/install.html
 
@@ -12,20 +12,16 @@ Matplotlib (2.02) https://matplotlib.org/
 
 SimPy (3.0.10) https://simpy.readthedocs.io/
 
-UPDATE 13/07/2017: Simpy and cv2 now included in this directory
+opencv (3.0+) http://www.opencv.org/
 
-Windows users
--------------
-For easy installation, use Anaconda (4.4.0) https://www.continuum.io/downloads
-
-It has all the libraries need to run this code prepackaged and ready to go.
-
+    > sudo apt-get install python3 python3-dev python3-tkinter pip3
+    > sudo pip3 install numpy scipy matplotlib opencv-python
 
 Usage and Documentation
 -----------------------
 SimPy is a process-based discrete-event simulation framework based on standard Python. Processes in SimPy are defined by Python generator functions and may, for example, be used to model active components like customers, vehicles or agents. SimPy also provides various types of shared resources to model limited capacity congestion points (like servers, checkout counters and tunnels).
 
-From this directory, start python:
+From this directory, run the command:
 
     > python3 script.py
 
