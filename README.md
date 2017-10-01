@@ -1,6 +1,6 @@
 simulation
 ==========
-simulation course (summer '17)
+
 
 Requriements
 ------------
