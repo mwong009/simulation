@@ -20,33 +20,32 @@ opencv (3.0+) http://www.opencv.org/
 Conda setup
 -----------
 
-1. Get miniconda from [here](https://docs.conda.io/en/latest/miniconda.html)
+Get miniconda from [here](https://docs.conda.io/en/latest/miniconda.html)
 
-2. Install git:
-
+Install git:
 
     > conda install git 
 
-3. Clone this repository
-
+Clone this repository
 
     > git clone https://github.com/mwong009/simulation.git simulation
 
-4. cd into the directory
-
+cd into the directory
 
     > cd simulation
 
 Installing
 ----------
 
+From the project directory:
+
 Windows:
 
-    > pip install -r requirements.txt
+    C:\...\simulation> pip install -r requirements.txt
 
 Linux:
 
-    > pip3 install -r requirements.txt
+    /.../simulation> pip3 install -r requirements.txt
 
 
 
