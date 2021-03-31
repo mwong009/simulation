@@ -24,13 +24,16 @@ Conda setup
 
 2. Install git:
 
+
     > conda install git 
 
 3. Clone this repository
 
+
     > git clone https://github.com/mwong009/simulation.git simulation
 
 4. cd into the directory
+
 
     > cd simulation
 
