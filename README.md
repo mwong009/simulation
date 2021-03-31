@@ -4,6 +4,9 @@ simulation
 
 Requriements
 ------------
+
+Requirements can be installed with Conda and pip
+
 Python (3.5+) https://www.python.org/downloads/
 
 NumPy (1.13+) https://scipy.org/install.html
@@ -17,15 +20,17 @@ opencv (3.0+) http://www.opencv.org/
 Conda setup
 -----------
 
-get git:
+1. Get miniconda from [here](https://docs.conda.io/en/latest/miniconda.html)
+
+2. Install git:
 
     > conda install git 
 
-clone this repository
+3. Clone this repository
 
     > git clone https://github.com/mwong009/simulation.git simulation
 
-cd into the directory
+4. cd into the directory
 
     > cd simulation
 
