@@ -14,6 +14,21 @@ SimPy (3.0.10+) https://simpy.readthedocs.io/
 
 opencv (3.0+) http://www.opencv.org/
 
+Conda setup
+-----------
+
+get git:
+
+    > conda install git 
+
+clone this repository
+
+    > git clone https://github.com/mwong009/simulation.git simulation
+
+cd into the directory
+
+    > cd simulation
+
 Installing
 ----------
 
