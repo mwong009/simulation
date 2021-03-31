@@ -61,6 +61,8 @@ On linux:
 
     > python3 script.py
 
+**Hit spacebar to start**
+
 Sample output:
 
     car 1 arrived on link 1E at 0.03s (Q=0)
