@@ -55,6 +55,10 @@ SimPy is a process-based discrete-event simulation framework based on standard P
 
 From the project directory, run the command:
 
+    > python script.py
+
+On linux:
+
     > python3 script.py
 
 Sample output:
